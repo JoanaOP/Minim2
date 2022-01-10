@@ -61,6 +61,7 @@ public class FollowersActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("user", Context.MODE_PRIVATE);
         String username = sharedPreferences.getString("name",null);
         doApiCallFollowers(username);
+        doApiCallUser(username);
         progressBar.setVisibility(View.INVISIBLE);
     }
 
@@ -114,6 +115,36 @@ public class FollowersActivity extends AppCompatActivity {
             public void onFailure(Call<List<JsonObject>> call, Throwable t) {
                 t.printStackTrace();
                 showAlertDialog("Error","Connexió fallida");
+            }
+        });
+    }
+
+    public void doApiCallUser(String username){
+        Call<JsonObject> call = API.getUser(username);
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if(response.isSuccessful()){
+                    try{
+                        User user = new User();
+                        JSONObject jsonObject = null;
+                        jsonObject = new JSONObject(new Gson().toJson(response.body()));
+
+                        user.setUsername(jsonObject.getString("login"));
+                        user.setFollowing(Integer.parseInt(jsonObject.getString("following")));
+                        user.setRepos(Integer.parseInt(jsonObject.getString("public_repos")));
+
+
+                    }
+                    catch(JSONException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
             }
         });
     }

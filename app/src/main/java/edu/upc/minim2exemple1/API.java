@@ -13,4 +13,7 @@ public interface API {
 
     @GET("/users/{username}/followers")
     Call<List<JsonObject>> getFollowers(@Path("username") String username);
+
+    @GET("/users/{username}")
+    Call<JsonObject> getUser(@Path("username") String username);
 }
