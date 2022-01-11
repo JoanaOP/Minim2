@@ -6,11 +6,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -27,7 +31,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class FollowersActivity extends AppCompatActivity {
+public class ReposActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -38,14 +42,26 @@ public class FollowersActivity extends AppCompatActivity {
     AlertDialog.Builder alertBuilder;
 
     ProgressBar progressBar;
+    ImageView avatarImg;
+    TextView nameTxt;
+    TextView followingTxt;
+    TextView followersTxt;
+    TextView reposTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_followers);
+        setContentView(R.layout.activity_repos);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+        avatarImg = (ImageView) findViewById(R.id.profileImg);
+        nameTxt = (TextView) findViewById(R.id.userText);
+        followingTxt = (TextView) findViewById(R.id.followingText);
+        followersTxt = (TextView) findViewById(R.id.followersText);
+        reposTxt = (TextView) findViewById(R.id.repositoriesText);
 
         alertBuilder = new AlertDialog.Builder(this);
 
@@ -56,13 +72,14 @@ public class FollowersActivity extends AppCompatActivity {
 
         mAdapter = new MyAdapter();
         recyclerView.setAdapter(mAdapter);
-        createAPI();
         progressBar.setVisibility(View.VISIBLE);
+
+        createAPI();
+
         SharedPreferences sharedPreferences = getSharedPreferences("user", Context.MODE_PRIVATE);
         String username = sharedPreferences.getString("name",null);
         doApiCallFollowers(username);
         doApiCallUser(username);
-        progressBar.setVisibility(View.INVISIBLE);
     }
 
     public void createAPI(){
@@ -79,7 +96,7 @@ public class FollowersActivity extends AppCompatActivity {
     }
 
     public void doApiCallFollowers(String username){
-        Call<List<JsonObject>> call = API.getFollowers(username);
+        Call<List<JsonObject>> call = API.getRepos(username);
         call.enqueue(new Callback<List<JsonObject>>() {
             @Override
             public void onResponse(Call<List<JsonObject>> call, Response<List<JsonObject>> response) {
@@ -88,17 +105,25 @@ public class FollowersActivity extends AppCompatActivity {
                     //mAdapter.setData(tracksList);
 
                     try {
-                        LinkedList<Follower> followersList = new LinkedList<Follower>();
+                        LinkedList<Repository> reposList = new LinkedList<Repository>();
                         for (int i = 0;i < response.body().size();i++) {
                             JSONObject jsonObject = null;
                             jsonObject = new JSONObject(new Gson().toJson(response.body().get(i)));
 
-                            Follower f = new Follower();
-                            f.setName(jsonObject.getString("login"));
-                            f.setAvatarUrl(jsonObject.getString("avatar_url"));
-                            followersList.add(f);
+                            Repository repo = new Repository();
+                            repo.setName(jsonObject.getString("name"));
+
+                            if (jsonObject.has("language") && !jsonObject.isNull("language")) {
+                                repo.setLanguage(jsonObject.getString("language"));
+                            }
+                            else{
+                                repo.setLanguage(null);
+                            }
+
+                            reposList.add(repo);
                         }
-                        mAdapter.setData(followersList);
+                        mAdapter.setData(reposList);
+                        recyclerView.setVisibility(View.VISIBLE);
                     }
                     catch (JSONException e) {
                         e.printStackTrace();
@@ -106,8 +131,11 @@ public class FollowersActivity extends AppCompatActivity {
                     }
 
                 }
+                else if(response.code()==404){
+                    showAlertDialog("Error","No s'ha trobat el usuari que buscaves");
+                }
                 else{
-                    showAlertDialog("Error","No s'ha trobat el que buscaves");
+                    showAlertDialog("Error","Error al servidor");
                 }
             }
 
@@ -126,25 +154,47 @@ public class FollowersActivity extends AppCompatActivity {
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if(response.isSuccessful()){
                     try{
-                        User user = new User();
                         JSONObject jsonObject = null;
                         jsonObject = new JSONObject(new Gson().toJson(response.body()));
 
-                        user.setUsername(jsonObject.getString("login"));
-                        user.setFollowing(Integer.parseInt(jsonObject.getString("following")));
-                        user.setRepos(Integer.parseInt(jsonObject.getString("public_repos")));
+                        nameTxt.setText(jsonObject.getString("login"));
+                        String followers = "Followers: " + jsonObject.getString("followers");
+                        followersTxt.setText(followers);
+                        String following = "Following: " + jsonObject.getString("following");
+                        followingTxt.setText(following);
+                        String repos = "Repositories: " + jsonObject.getString("public_repos");
+                        reposTxt.setText(repos);
 
 
+                        Glide.with(avatarImg.getContext())
+                                .load(jsonObject.getString("avatar_url"))
+                                .into(avatarImg);
+
+                        nameTxt.setVisibility(View.VISIBLE);
+                        followersTxt.setVisibility(View.VISIBLE);
+                        followingTxt.setVisibility(View.VISIBLE);
+                        reposTxt.setVisibility(View.VISIBLE);
+                        avatarImg.setVisibility(View.VISIBLE);
+
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                     catch(JSONException e){
                         e.printStackTrace();
+                        showAlertDialog("Error","Error a l'hora de crear la pantalla");
                     }
+                }
+                else if(response.code()==404){
+                    showAlertDialog("Error","No s'ha trobat el usuari que buscaves");
+                }
+                else{
+                    showAlertDialog("Error","Error al servidor");
                 }
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
-
+                t.printStackTrace();
+                showAlertDialog("Error","Connexió fallida");
             }
         });
     }

@@ -11,8 +11,8 @@ import retrofit2.http.Path;
 public interface API {
     final String BASE_URL = "https://api.github.com/";
 
-    @GET("/users/{username}/followers")
-    Call<List<JsonObject>> getFollowers(@Path("username") String username);
+    @GET("/users/{username}/repos")
+    Call<List<JsonObject>> getRepos(@Path("username") String username);
 
     @GET("/users/{username}")
     Call<JsonObject> getUser(@Path("username") String username);

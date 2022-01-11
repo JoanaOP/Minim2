@@ -4,14 +4,18 @@ public class User {
     private String username;
     private int repos;
     private int following;
+    private int followers;
+    private String avatarUrl;
 
     public User(){
 
     }
-    public User(String username, int repos, int following){
+    public User(String username, int repos, int following, int followers, String avatarUrl){
         setFollowing(following);
         setRepos(repos);
         setUsername(username);
+        setFollowers(followers);
+        setAvatarUrl(avatarUrl);
     }
 
     public int getFollowing() {
@@ -36,5 +40,21 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public int getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(int followers) {
+        this.followers = followers;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

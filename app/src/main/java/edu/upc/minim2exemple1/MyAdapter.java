@@ -1,14 +1,10 @@
 package edu.upc.minim2exemple1;
 
-import android.content.Intent;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,33 +12,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    private List<Follower> values;
+    private List<Repository> values;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
     public class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
-        public TextView txtHeader;
-        public TextView txtFooter;
+        public TextView txtRepoName;
+        public TextView txtLanguage;
         public View layout;
-        public ImageView imgAvatar;
 
         public ViewHolder(View v) {
             super(v);
             layout = v;
-            txtHeader = (TextView) v.findViewById(R.id.firstLine);
-            //txtFooter = (TextView) v.findViewById(R.id.secondLine);
-            imgAvatar = (ImageView) v.findViewById(R.id.icon);
+            txtRepoName = (TextView) v.findViewById(R.id.repoText);
+            txtLanguage = (TextView) v.findViewById(R.id.languageText);
         }
     }
 
-    public void setData(List<Follower> myDataset) {
+    public void setData(List<Repository> myDataset) {
         values = myDataset;
         notifyDataSetChanged();
     }
 
-    public void add(int position, Follower item) {
+    public void add(int position, Repository item) {
         values.add(position, item);
         notifyItemInserted(position);
     }
@@ -60,7 +54,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
  */
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(List<Follower> myDataset) {
+    public MyAdapter(List<Repository> myDataset) {
         values = myDataset;
     }
 
@@ -87,13 +81,22 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, final int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        Follower follower = values.get(position);
-        String name = follower.getName();
-        holder.txtHeader.setText(name);
+        Repository repository = values.get(position);
+        String name = repository.getName();
+        holder.txtRepoName.setText(name);
+        if(repository.getLanguage() == null){
+            holder.txtLanguage.setText("Not defined");
+        }
+        else {
+            holder.txtLanguage.setText(repository.getLanguage());
+        }
 
+        /*
         Glide.with(holder.imgAvatar.getContext())
                 .load(follower.getAvatarUrl())
                 .into(holder.imgAvatar);
+
+         */
         /*
         holder.txtHeader.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,7 +107,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
          */
 
-        //holder.txtFooter.setText(track.getSinger());
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)

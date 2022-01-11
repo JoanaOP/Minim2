@@ -1,8 +1,7 @@
 package edu.upc.minim2exemple1;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,29 +9,28 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     public EditText usernameText;
     Context context;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         context = this;
 
         usernameText = findViewById(R.id.usernameEditText);
+        SharedPreferences sharedPreferences = getSharedPreferences("user",Context.MODE_PRIVATE);
+        String username = sharedPreferences.getString("name",null);
 
+        if(username!=null){
+            usernameText.setText(username);
+        }
 
     }
 
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putString("name", username);
             editor.commit();
 
-            Intent intent = new Intent(this, FollowersActivity.class);
+            Intent intent = new Intent(this, ReposActivity.class);
             this.startActivity(intent);
         }
         else{
@@ -58,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
 
 }
